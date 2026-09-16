@@ -30,6 +30,7 @@ bash scripts/01_setup_env.sh
 
 ```bash
 bash scripts/02_download_model_and_data.sh
+bash scripts/02b_model_smoke.sh
 ```
 
 脚本使用 `hf download` 下载模型（公共仓库不需要登录），并通过 EvalPlus 官方 API 下载/缓存 HumanEval+ 与 MBPP+，打印题目数量和包版本。LiveCodeBench 和 BFCL 数据由各自官方仓库/runner 在下一阶段下载并缓存。

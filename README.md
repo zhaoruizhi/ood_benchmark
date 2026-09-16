@@ -12,6 +12,7 @@ vi config.env
 bash scripts/00_preflight.sh
 bash scripts/01_setup_env.sh
 bash scripts/02_download_model_and_data.sh
+bash scripts/02b_model_smoke.sh
 bash scripts/03_evalplus.sh
 bash scripts/04_livecodebench.sh
 bash scripts/05_bfcl.sh
