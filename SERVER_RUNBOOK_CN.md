@@ -14,7 +14,7 @@ cp config.env.example config.env
 $EDITOR config.env
 ```
 
-配置至少包括：`MODEL_DIR`（已有模型目录则无需再次下载）、`OOD_ROOT`（大磁盘）、`GPU_ID`（可见 GPU 的起始编号）、`TP_SIZE`（本实验设为 4）和 `ENV_NAME`。若模型尚未下载，`MODEL_DIR` 必须是可写目录。不要把 Hugging Face token、代理密码写入 `config.env`。
+配置至少包括：`MODEL_DIR`（已有模型目录则无需再次下载）、`OOD_ROOT`（大磁盘）、`GPU_ID`（逗号分隔的可见 GPU，例如 `4,5,6,7`）、`TP_SIZE`（本实验设为 4）和 `ENV_NAME`。若模型尚未下载，`MODEL_DIR` 必须是可写目录。不要把 Hugging Face token、代理密码写入 `config.env`。
 
 ## 2. GPU、环境和缓存
 
