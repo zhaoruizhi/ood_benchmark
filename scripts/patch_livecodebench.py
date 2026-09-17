@@ -46,4 +46,15 @@ if not prompt_text.startswith(header) or next_import not in prompt_text:
 tail = prompt_text[prompt_text.index(next_import):]
 prompt_path.write_text(f"{header}{compat_import}\n\n{tail}")
 
+# Some scenarios repeat the same removed constants import.  Replace only a
+# complete, unindented import line so already guarded imports remain untouched.
+old_import = "from anthropic import HUMAN_PROMPT, AI_PROMPT"
+for other_prompt in (path.parent / "prompts").glob("*.py"):
+    lines = other_prompt.read_text().splitlines()
+    if old_import in lines:
+        line_index = lines.index(old_import)
+        replacement = compat_import.splitlines()
+        lines[line_index : line_index + 1] = replacement
+        other_prompt.write_text("\n".join(lines) + "\n")
+
 print(f"patched {path}")
