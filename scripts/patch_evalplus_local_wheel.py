@@ -25,6 +25,17 @@ def record_row(name: str, payload: bytes) -> list[str]:
 def patch_wheel(source: Path, output_dir: Path, dropped: list[str]) -> Path:
     output_dir.mkdir(parents=True, exist_ok=True)
     target = output_dir / source.name
+    prefixes = [f"Requires-Dist: {name}".encode() for name in dropped]
+
+    if target.exists() and target.stat().st_mtime_ns >= source.stat().st_mtime_ns:
+        with zipfile.ZipFile(target) as archive:
+            metadata_names = [
+                name for name in archive.namelist() if name.endswith(".dist-info/METADATA")
+            ]
+            if len(metadata_names) == 1:
+                metadata_lines = archive.read(metadata_names[0]).splitlines()
+                if all(not any(line.startswith(prefix) for line in metadata_lines) for prefix in prefixes):
+                    return target
 
     with zipfile.ZipFile(source) as archive:
         members = {
@@ -40,7 +51,6 @@ def patch_wheel(source: Path, output_dir: Path, dropped: list[str]) -> Path:
 
     metadata_name = metadata_names[0]
     lines = members[metadata_name].splitlines(keepends=True)
-    prefixes = [f"Requires-Dist: {name}".encode() for name in dropped]
     matched = {name: False for name in dropped}
     filtered = []
     for line in lines:

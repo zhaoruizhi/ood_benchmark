@@ -10,8 +10,13 @@ ENV_DIR="$(env_dir livecodebench)"
 source "$ENV_DIR/bin/activate"
 PIP_OFFLINE=(--no-index --find-links "$OOD_ROOT/cache/wheelhouse")
 python -m pip install "${PIP_OFFLINE[@]}" -U pip setuptools wheel
+PATCHED_VLLM_WHEEL=$(python "$ROOT_DIR/scripts/patch_evalplus_local_wheel.py" \
+  "$OOD_ROOT/cache/wheelhouse/vllm-0.8.5-cp38-abi3-linux_x86_64.whl" \
+  "$OOD_ROOT/cache/patched_wheelhouse" --drop opentelemetry-sdk \
+  --drop opentelemetry-api --drop opentelemetry-exporter-otlp \
+  --drop opentelemetry-semantic-conventions-ai)
 python -m pip install "${PIP_OFFLINE[@]}" -U -c "$ROOT_DIR/constraints/livecodebench.txt" \
-  'torch==2.6.0' 'transformers==4.55.2' 'tokenizers==0.21.4' 'vllm==0.8.5'
+  'torch==2.6.0' 'transformers==4.55.2' 'tokenizers==0.21.4' "$PATCHED_VLLM_WHEEL"
 python -m pip install "${PIP_OFFLINE[@]}" -c "$ROOT_DIR/constraints/livecodebench.txt" -e "$LCB_DIR"
 python -m py_compile "$LCB_DIR/lcb_runner/lm_styles.py"
 python -m pip check | tee "$OOD_ROOT/logs/lcb_pip_check.log"
