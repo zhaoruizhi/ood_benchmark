@@ -69,7 +69,13 @@ bash scripts/99_manifest.sh
 
 ## 8. 常见故障
 
-- `KeyError: qwen3`：升级 `transformers>=4.51.0`，确认实际导入版本。
+- `Qwen2Tokenizer` 缺少 `all_special_tokens_extended`：不要使用 Transformers 5.x；运行 `python -m pip install -U --force-reinstall 'transformers==4.55.2' 'tokenizers==0.21.4'`。
+- `Language.__init__() missing 1 required positional argument: 'name'`：这是 EvalPlus 的 Tree-sitter API 版本过旧。运行 `python -m pip install -U --force-reinstall 'tree-sitter==0.25.0' 'tree-sitter-python==0.25.0'`，再运行下面的兼容性验证命令。
+- `KeyError: qwen3`：确认实际导入的 Transformers 版本为 4.55.2。
+
+```bash
+python -c 'from tree_sitter import Language, Parser; import tree_sitter_python; Parser(Language(tree_sitter_python.language())); print("tree-sitter parser compatibility: OK")'
+```
 - OOM：重新检查 GPU 进程；降低 `VLLM_GPU_MEMORY_UTILIZATION`（如 0.80），不要抢占别人的卡。
 - LCB unknown model：检查脚本对 `lm_styles.py` 的精确模型条目补丁。
 - BFCL 解析失败：先单独运行 `simple_python`，查看 `include-input-log` 是否出现 `<tool_call>`；保留原始响应。

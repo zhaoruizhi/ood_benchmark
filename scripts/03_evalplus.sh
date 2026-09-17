@@ -3,8 +3,8 @@ source "$(dirname "$0")/common.sh"; activate_evalplus
 export EP_ROOT="$OOD_ROOT/results/evalplus"; mkdir -p "$EP_ROOT"
 evalplus.codegen --model "$MODEL_DIR" --dataset humaneval --backend vllm --tp "$TP_SIZE" --greedy --root "$EP_ROOT" 2>&1 | tee "$OOD_ROOT/logs/humaneval_codegen.log"
 evalplus.codegen --model "$MODEL_DIR" --dataset mbpp --backend vllm --tp "$TP_SIZE" --greedy --root "$EP_ROOT" 2>&1 | tee "$OOD_ROOT/logs/mbpp_codegen.log"
-HE_SAMPLE=$(find "$EP_ROOT/humaneval" -type f -name '*.jsonl' ! -name '*eval_results*' | sort | tail -1)
-MBPP_SAMPLE=$(find "$EP_ROOT/mbpp" -type f -name '*.jsonl' ! -name '*eval_results*' | sort | tail -1)
+HE_SAMPLE=$(find "$EP_ROOT/humaneval" -type f -name '*.jsonl' ! -name '*.raw.jsonl' ! -name '*eval_results*' | sort | tail -1)
+MBPP_SAMPLE=$(find "$EP_ROOT/mbpp" -type f -name '*.jsonl' ! -name '*.raw.jsonl' ! -name '*eval_results*' | sort | tail -1)
 test -s "$HE_SAMPLE" && test -s "$MBPP_SAMPLE"
 evalplus.syncheck --samples "$HE_SAMPLE" --dataset humaneval | tee "$OOD_ROOT/logs/humaneval_syncheck.log" || true
 evalplus.syncheck --samples "$MBPP_SAMPLE" --dataset mbpp | tee "$OOD_ROOT/logs/mbpp_syncheck.log" || true
