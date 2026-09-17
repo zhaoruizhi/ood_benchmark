@@ -1,7 +1,18 @@
 #!/usr/bin/env bash
 set -euo pipefail
 source "$(dirname "$0")/common.sh"
-if declare -F activate_evalplus >/dev/null; then activate_evalplus; else activate; fi
+# Prefer the known-good legacy venv when it exists.  common.sh may otherwise
+# activate a Conda environment with the same name but without EvalPlus.
+if [[ -x "$OOD_ROOT/envs/evalplus/bin/python" ]]; then
+  source "$OOD_ROOT/envs/evalplus/bin/activate"
+elif [[ -x "$OOD_ROOT/venv/bin/python" ]]; then
+  source "$OOD_ROOT/venv/bin/activate"
+elif declare -F activate_evalplus >/dev/null; then
+  activate_evalplus
+else
+  activate
+fi
+python -c 'import evalplus; print("EvalPlus runtime:", evalplus.__file__)'
 
 # Four independently sampled pass@1 runs.  Change these only before starting.
 SEEDS="${AVG4_SEEDS:-20260917,20260918,20260919,20260920}"
