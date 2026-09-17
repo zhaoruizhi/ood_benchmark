@@ -7,10 +7,14 @@ from vllm import LLM, SamplingParams
 def main() -> None:
     model_dir = os.environ["MODEL_DIR"]
     tp_size = int(os.environ.get("TP_SIZE", "1"))
+    gpu_memory_utilization = float(
+        os.environ.get("SMOKE_GPU_MEMORY_UTILIZATION", "0.20")
+    )
     llm = LLM(
         model=model_dir,
         tensor_parallel_size=tp_size,
         max_model_len=2048,
+        gpu_memory_utilization=gpu_memory_utilization,
         trust_remote_code=True,
     )
     outputs = llm.generate(
