@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 source "$(dirname "$0")/common.sh"
-activate
+activate_evalplus
 python -m pip install -U huggingface_hub
 if [[ ! -f "$MODEL_DIR/config.json" ]]; then
   mkdir -p "$MODEL_DIR"

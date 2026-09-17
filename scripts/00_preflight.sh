@@ -4,6 +4,11 @@ log "GPU preflight (do not stop other users' processes)"
 nvidia-smi --query-gpu=index,name,driver_version,memory.total,memory.used,utilization.gpu --format=csv
 ps -eo pid,user,etime,cmd | grep -E '[v]llm|[t]orchrun|[a]ccelerate|[b]fcl|[l]cb_runner' | head -80 || true
 nvidia-smi -i "$GPU_ID" --query-gpu=index,name,memory.used,memory.total,utilization.gpu --format=csv
+GPU_MEMORY_USED=$(nvidia-smi -i "$GPU_ID" --query-gpu=memory.used --format=csv,noheader,nounits | tr -d ' ')
+if (( GPU_MEMORY_USED > 1024 )); then
+  echo "GPU $GPU_ID is busy (${GPU_MEMORY_USED} MiB used); refusing to launch a benchmark." >&2
+  exit 3
+fi
 test -f "$MODEL_DIR/config.json" || { echo "MODEL_DIR missing config.json: $MODEL_DIR" >&2; exit 1; }
 test -f "$MODEL_DIR/tokenizer_config.json" || { echo "MODEL_DIR missing tokenizer_config.json" >&2; exit 1; }
 mkdir -p "$HF_HOME" "$HF_DATASETS_CACHE" "$TRANSFORMERS_CACHE"
