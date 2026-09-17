@@ -14,7 +14,7 @@ cp config.env.example config.env
 $EDITOR config.env
 ```
 
-配置至少包括：`MODEL_DIR`（已有模型目录则无需再次下载）、`OOD_ROOT`（大磁盘）、`GPU_ID`（逗号分隔的可见 GPU，例如 `4,5,6,7`）、`TP_SIZE`（本实验设为 4）和 `ENV_NAME`。`VLLM_USE_V1=0` 会使用 vLLM 0.8.5 的稳定 V0 engine，规避与当前环境中 FlashInfer 二进制扩展的 ABI 冲突。若模型尚未下载，`MODEL_DIR` 必须是可写目录。不要把 Hugging Face token、代理密码写入 `config.env`。
+配置至少包括：`MODEL_DIR`（已有模型目录则无需再次下载）、`OOD_ROOT`（大磁盘）、`GPU_ID`（逗号分隔的可见 GPU，例如 `4,5,6,7`）、`TP_SIZE`（本实验设为 4）和 `ENV_NAME`。`VLLM_USE_V1=0` 会使用 vLLM 0.8.5 的稳定 V0 engine，规避与当前环境中 FlashInfer 二进制扩展的 ABI 冲突；`NCCL_NVLS_ENABLE=0` 会关闭该节点上无法完成初始化的 NVLink SHARP 路径，但保留普通 NVLink P2P。若模型尚未下载，`MODEL_DIR` 必须是可写目录。不要把 Hugging Face token、代理密码写入 `config.env`。
 
 ## 2. GPU、环境和缓存
 
