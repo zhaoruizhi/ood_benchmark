@@ -5,7 +5,7 @@ if [[ ! -d "$BFCL_DIR/.git" ]]; then
   git clone https://github.com/ShishirPatil/gorilla.git "$BFCL_DIR"
 fi
 git -C "$BFCL_DIR" switch --detach "$BFCL_REV"
-python "$ROOT_DIR/scripts/patch_bfcl_v3.py" "$BFCL_DIR/berkeley-function-call-leaderboard"
+python3 "$ROOT_DIR/scripts/patch_bfcl_v3.py" "$BFCL_DIR/berkeley-function-call-leaderboard"
 ENV_DIR="$(env_dir bfcl_v3)"
 [[ -x "$ENV_DIR/bin/python" ]] || python3 -m venv "$ENV_DIR"
 source "$ENV_DIR/bin/activate"

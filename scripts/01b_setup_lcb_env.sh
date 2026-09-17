@@ -4,7 +4,7 @@ LCB_DIR="$OOD_ROOT/repos/LiveCodeBench"
 if [[ ! -d "$LCB_DIR/.git" ]]; then
   git clone https://github.com/LiveCodeBench/LiveCodeBench.git "$LCB_DIR"
 fi
-python "$ROOT_DIR/scripts/patch_livecodebench.py" "$LCB_DIR/lcb_runner/lm_styles.py"
+python3 "$ROOT_DIR/scripts/patch_livecodebench.py" "$LCB_DIR/lcb_runner/lm_styles.py"
 ENV_DIR="$(env_dir livecodebench)"
 [[ -x "$ENV_DIR/bin/python" ]] || python3 -m venv "$ENV_DIR"
 source "$ENV_DIR/bin/activate"
