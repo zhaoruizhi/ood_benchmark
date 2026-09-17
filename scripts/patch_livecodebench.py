@@ -33,16 +33,17 @@ path.write_text(text)
 
 prompt_path = path.parent / "prompts/test_output_prediction.py"
 prompt_text = prompt_path.read_text()
-old_import = "from anthropic import HUMAN_PROMPT, AI_PROMPT"
 compat_import = '''try:
     from anthropic import HUMAN_PROMPT, AI_PROMPT
 except ImportError:
     # Removed by newer Anthropic SDKs; retained for legacy prompt formatting.
     HUMAN_PROMPT = "\\n\\nHuman:"
     AI_PROMPT = "\\n\\nAssistant:"'''
-if old_import in prompt_text:
-    prompt_path.write_text(prompt_text.replace(old_import, compat_import, 1))
-elif compat_import not in prompt_text:
-    raise SystemExit(f"LiveCodeBench Anthropic import anchor not found in {prompt_path}")
+header = "import json\n\n"
+next_import = "from lcb_runner.lm_styles import LMStyle"
+if not prompt_text.startswith(header) or next_import not in prompt_text:
+    raise SystemExit(f"LiveCodeBench prompt import anchors not found in {prompt_path}")
+tail = prompt_text[prompt_text.index(next_import):]
+prompt_path.write_text(f"{header}{compat_import}\n\n{tail}")
 
 print(f"patched {path}")
