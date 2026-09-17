@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""Build an EvalPlus wheel for the local vLLM-only benchmark profile.
+"""Build dependency-trimmed wheels for the local vLLM-only profile.
 
 EvalPlus imports the Google provider lazily, but 0.3.1 declares
 google-generativeai as an unconditional dependency.  That dependency cannot
 coexist with vLLM 0.8.5's OpenTelemetry/protobuf pins in the offline cache.
-Remove only that unused provider dependency and regenerate wheel RECORD data.
+VLLM also imports its OTLP exporters only when tracing is configured.  Remove
+only explicitly requested unused dependencies and regenerate wheel RECORD data.
 """
 
 import argparse
@@ -16,15 +17,12 @@ import zipfile
 from pathlib import Path
 
 
-GOOGLE_REQUIREMENT = b"Requires-Dist: google-generativeai "
-
-
 def record_row(name: str, payload: bytes) -> list[str]:
     digest = base64.urlsafe_b64encode(hashlib.sha256(payload).digest()).rstrip(b"=")
     return [name, f"sha256={digest.decode()}", str(len(payload))]
 
 
-def patch_wheel(source: Path, output_dir: Path) -> Path:
+def patch_wheel(source: Path, output_dir: Path, dropped: list[str]) -> Path:
     output_dir.mkdir(parents=True, exist_ok=True)
     target = output_dir / source.name
 
@@ -42,9 +40,19 @@ def patch_wheel(source: Path, output_dir: Path) -> Path:
 
     metadata_name = metadata_names[0]
     lines = members[metadata_name].splitlines(keepends=True)
-    filtered = [line for line in lines if not line.startswith(GOOGLE_REQUIREMENT)]
-    if len(filtered) == len(lines):
-        raise RuntimeError("google-generativeai requirement was not found")
+    prefixes = [f"Requires-Dist: {name}".encode() for name in dropped]
+    matched = {name: False for name in dropped}
+    filtered = []
+    for line in lines:
+        for name, prefix in zip(dropped, prefixes):
+            if line.startswith(prefix):
+                matched[name] = True
+                break
+        else:
+            filtered.append(line)
+    missing = [name for name, found in matched.items() if not found]
+    if missing:
+        raise RuntimeError(f"requirements were not found: {', '.join(missing)}")
     members[metadata_name] = b"".join(filtered)
 
     record_name = record_names[0]
@@ -64,8 +72,9 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("source", type=Path)
     parser.add_argument("output_dir", type=Path)
+    parser.add_argument("--drop", action="append", required=True)
     args = parser.parse_args()
-    print(patch_wheel(args.source, args.output_dir))
+    print(patch_wheel(args.source, args.output_dir, args.drop))
 
 
 if __name__ == "__main__":
