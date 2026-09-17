@@ -30,4 +30,19 @@ text = anchor_pattern.sub(
     count=1,
 )
 path.write_text(text)
+
+prompt_path = path.parent / "prompts/test_output_prediction.py"
+prompt_text = prompt_path.read_text()
+old_import = "from anthropic import HUMAN_PROMPT, AI_PROMPT"
+compat_import = '''try:
+    from anthropic import HUMAN_PROMPT, AI_PROMPT
+except ImportError:
+    # Removed by newer Anthropic SDKs; retained for legacy prompt formatting.
+    HUMAN_PROMPT = "\\n\\nHuman:"
+    AI_PROMPT = "\\n\\nAssistant:"'''
+if old_import in prompt_text:
+    prompt_path.write_text(prompt_text.replace(old_import, compat_import, 1))
+elif compat_import not in prompt_text:
+    raise SystemExit(f"LiveCodeBench Anthropic import anchor not found in {prompt_path}")
+
 print(f"patched {path}")
