@@ -7,9 +7,11 @@ root = Path(sys.argv[1])
 config_path = root / "bfcl_eval/constants/model_config.py"
 supported_path = root / "bfcl_eval/constants/supported_models.py"
 pyproject_path = root / "pyproject.toml"
+cohere_path = root / "bfcl_eval/model_handler/api_inference/cohere.py"
 config = config_path.read_text()
 supported = supported_path.read_text()
 pyproject = pyproject_path.read_text()
+cohere_source = cohere_path.read_text()
 
 key = '"Qwen/Qwen3-4B-Instruct-2507-FC"'
 if key not in config:
@@ -55,5 +57,12 @@ for old, new in replacements.items():
     elif new and new not in pyproject:
         raise SystemExit(f"BFCL dependency anchor not found in {pyproject_path}: {old!r}")
 pyproject_path.write_text(pyproject)
+
+# Cohere 5.18 removed a runtime-visible ChatResponse alias used only in this
+# handler's annotations.  Postpone annotation evaluation so importing the BFCL
+# registry does not fail when the local Qwen handler is selected.
+future_annotations = "from __future__ import annotations\n\n"
+if not cohere_source.startswith(future_annotations):
+    cohere_path.write_text(future_annotations + cohere_source)
 
 print(f"patched {root}")
